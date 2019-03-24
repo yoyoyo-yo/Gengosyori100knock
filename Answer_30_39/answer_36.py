@@ -21,19 +21,42 @@ with open("neko.txt.mecab", 'r') as f:
                    'pos1': pos1}
 
         mappings.append(mapping)
-        
-nams = []
-xs = []
+
+
+# histogram
+
+hists = {}
         
 for mapping in mappings:
-    if mapping['pos'] == '名詞':
-        xs.append(mapping['surface'])
+    w = mapping['surface']
+    if w in hists.keys():
+        hists[w] += 1
     else:
-        if len(xs) > 1:
-            x = ''
-            for _x in xs:
-                x += _x
-            nams.append(x)
-        xs = []
+        hists[w] = 1
+
+# sort
         
-print(nams)
+hists_sort_w = []
+hists_sort_c = []
+
+maximum = 0
+maximum_w = None
+
+while len(hists.keys()) > 0:
+
+    maximum = 0
+        
+    for key, count in hists.items():
+        if count > maximum:
+            if key not in hists_sort_w:
+                maximum = count
+                maximum_w = key
+
+    hists.pop(maximum_w)
+            
+    hists_sort_w.append(maximum_w)
+    hists_sort_c.append(maximum)
+
+for w, c in zip(hists_sort_w, hists_sort_c):
+    print(w, c)
+
