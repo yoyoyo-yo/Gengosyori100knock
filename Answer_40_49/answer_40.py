@@ -7,10 +7,8 @@ class Morph():
         self.pos1 = pos1
 
     def display(self):
-        print("surface:", self.surface, end=' ')
-        print("base:", self.base, end=' ')
-        print("pos:", self.pos, end=' ')
-        print("pos1:", self.pos1)
+        print(" [surface] {} [base] {} [pos] {} [pos1] {}".format(
+            self.surface, self.base, self.pos, self.pos1))
 
 
 # make Morph
@@ -41,6 +39,10 @@ with open("neko.txt.cabocha", 'r') as f:
             morph = Morph(surface=surface, base=base, pos=pos, pos1=pos1)
             sentence.append(morph)
 
+
+sentence_N = 4
+
+print("sentence", sentence_N)
 
 for mor in sentences[4]:
     mor.display()

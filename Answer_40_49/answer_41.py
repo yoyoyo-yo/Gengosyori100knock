@@ -1,3 +1,5 @@
+DEBUG = False
+
 
 class Morph():
     def __init__(self, surface, base, pos, pos1):
@@ -7,10 +9,8 @@ class Morph():
         self.pos1 = pos1
 
     def display(self):
-        print("surface:", self.surface, end=' ')
-        print("base:", self.base, end=' ')
-        print("pos:", self.pos, end=' ')
-        print("pos1:", self.pos1)
+        print(" [surface] {} [base] {} [pos] {} [pos1] {}".format(
+            self.surface, self.base, self.pos, self.pos1))
 
 
 class Chunk():
@@ -19,56 +19,120 @@ class Chunk():
         self.dst = dst
         self.srcs = srcs
 
-        
+    def display(self):
+        for i, morph in enumerate(self.morphs):
+            print("morph {}:".format(i))
+            morph.display()
+        print("dst:", self.dst, end=' ')
+        print("srcs:", self.srcs)
+
         
 # make Morph
-        
 with open("neko.txt.cabocha", 'r') as f:
 
     morphs = []
-    chunks = []
+    kakarisaki_index_list = []
+    morphs_per_chunk = []
+    kakarisaki_pairs = []
+    dsts = []
+    bunsetsu_index = 0
     sentences = []
+    chunks = []
     
+    # each line
     for l in f.readlines()[4:]:
-        l = l.strip()
+        # strip
+        l = l.rstrip()
 
-        if l == 'EOS':
-            if len(morphs) > 0:
-                chunk = Chunk(morphs=morphs, dst)
+        if l == "EOS":
+            if len(dsts) < 1:
+                continue
+
+            # add last morphs to morphs_per_chunk
+            morphs_per_chunk.append(morphs)
+
+            # get kakarimoto
+            chunk_N = bunsetsu_index + 1
+
+            # count kakarimoto index list
+            srcs = [[] for _ in range(chunk_N)]
+            
+            for kakarimoto_index, kakarisaki_index in kakarisaki_pairs:
+                srcs[kakarisaki_index].append(kakarisaki_index)
+
+            if DEBUG:
+                print("Chunk number :", chunk_N)
+                print("morphs list per chunk :", morphs_per_chunk)
+                print("dst list :", dsts)
+                print("srcs list :", srcs)
+
+            for i in range(chunk_N):
+                chunk = Chunk(morphs=morphs_per_chunk[i], dst=dsts[i], srcs=srcs[i])
                 chunks.append(chunk)
+
+            sentences.append(chunks)
+            chunks = []
+
+            morphs_per_chunk = []
+            dsts = []
+            kakarisaki_index_list = []
+            kakarisaki_pairs = []
+        
+        # kakarisaki information case
+        elif l[0] == "*":
+            if DEBUG:
+                print(l)
+
+            # if morph list contains more than one morph instance
+            if len(morphs) > 0:
+                morphs_per_chunk.append(morphs)
                 morphs = []
 
-            if len(chunks) > 0:
-                sentences.append(chunks)
-                
-            chunks = []
-                
-            continue
-        
-        spl = l.split('\t')
-        
-        if len(spl) > 1:
-            surface, parse = spl
+            # parse by space
+            _, bunsetsu_index, kakarisaki_index, keitaiso_index, kakarisaki_score = l.split(" ")
+
+            # get kakarisaki_index
+            kakarisaki_index = int(kakarisaki_index[:-1])
+            kakarisaki_index_list.append(kakarisaki_index)
+
+            # add kakarisaki_index to dsts
+            dsts.append(kakarisaki_index)
+
+            # change type
+            bunsetsu_index = int(bunsetsu_index)
+
+            # add pairs to count kakarimoto list in EOS
+            kakarisaki_pairs.append([bunsetsu_index, kakarisaki_index])
             
-            spl2 = parse.split(',')
+
+        # parse case
+        else:
+            if DEBUG:
+                print(l)
+
+            # split by tab
+            surface, parse = l.split("\t")
+
+            # split by camma
+            spl2 = parse.split(",")
+
+            # get parsed information
             if len(spl2) == 9:
                 pos, pos1, pos2, pos3, katsuyokei, katsuyogata, base, read, pron = spl2
             else:
                 pos, pos1, pos2, pos3, katsuyokei, katsuyogata, base = spl2
 
+            # get morph instance
             morph = Morph(surface=surface, base=base, pos=pos, pos1=pos1)
+            # add morph list
             morphs.append(morph)
 
-        else:
-            if len(morphs) > 0:
-                chunk = Chunk(morphs=morphs, dst)
-                chunks.append(chunk)
-                morphs = []
-                
-            spl = spl[0].split(' ')
-            _, chunk_num, dst, syuji_kino, score = spl
 
-            print(spl)
+sentence_N = 4
 
-for mor in sentences[4]:
-    mor.display()
+print("sentence", sentence_N)
+
+for i, chunk in enumerate(sentences[sentence_N]):
+    print("Chunk", i)
+    chunk.display()
+    print()
