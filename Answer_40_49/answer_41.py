@@ -58,7 +58,7 @@ with open("neko.txt.cabocha", 'r') as f:
             srcs = [[] for _ in range(chunk_N)]
             
             for kakarimoto_index, kakarisaki_index in kakarisaki_pairs:
-                srcs[kakarisaki_index].append(kakarisaki_index)
+                srcs[kakarisaki_index].append(kakarimoto_index)
 
             if DEBUG:
                 print("Chunk number :", chunk_N)
