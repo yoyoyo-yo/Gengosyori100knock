@@ -73,6 +73,7 @@ with open("neko.txt.cabocha", 'r') as f:
             sentences.append(chunks)
             chunks = []
 
+            morphs = []
             morphs_per_chunk = []
             dsts = []
             kakarisaki_index_list = []
